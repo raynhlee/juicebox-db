@@ -64,7 +64,6 @@ async function createTables() {
             UNIQUE("postId", "tagId")
         );
       `);
-
     console.log("Finished building tables!");
   } catch (error) {
     console.error("Error building tables!");
@@ -135,7 +134,7 @@ async function createInitialPosts() {
   }
 }
 
-//todo formerly:
+// formerly:
 // async function createInitialPosts() {
 //   try {
 //     const [albert, sandra, glamgal] = await getAllUsers();
@@ -236,14 +235,12 @@ async function testDB() {
     const albert = await getUserById(1);
     console.log("Result:", albert);
 
-    //todo review:
     console.log("Calling updatePost on posts[1], only updating tags");
     const updatePostTagsResult = await updatePost(posts[1].id, {
       tags: ["#youcandoanything", "#redfish", "#bluefish"],
     });
     console.log("Result:", updatePostTagsResult);
 
-    //todo review:
     console.log("Calling getPostsByTagName with #happy");
     const postsWithHappy = await getPostsByTagName("#happy");
     console.log("Result:", postsWithHappy);

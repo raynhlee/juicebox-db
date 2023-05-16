@@ -2,12 +2,7 @@ const { Client } = require("pg"); // imports the pg module
 
 const client = new Client("postgres://localhost:5432/juicebox-dev");
 
-async function createPost({
-  authorId,
-  title,
-  content,
-  tags = [], // this is new
-}) {
+async function createPost({ authorId, title, content, tags = [] }) {
   try {
     const {
       rows: [post],
@@ -19,7 +14,6 @@ async function createPost({
       `,
       [authorId, title, content]
     );
-
     const tagList = await createTags(tags);
 
     return await addTagsToPost(post.id, tagList);
@@ -28,7 +22,7 @@ async function createPost({
   }
 }
 
-//todo formerly:
+// formerly:
 // async function createPost({ authorId, title, content }) {
 //   try {
 //     const {
@@ -190,7 +184,7 @@ async function updatePost(postId, fields = {}) {
   }
 }
 
-//todo formerly:
+// formerly:
 // async function updatePost(id, fields = {}) {
 //   // build the set string
 //   const setString = Object.keys(fields)
@@ -222,8 +216,6 @@ async function updatePost(postId, fields = {}) {
 
 async function getAllPosts() {
   try {
-    //todo doesn't postIds need to be [postIds]
-    //todo postIds probably an array
     const { rows: postIds } = await client.query(`
         SELECT id
         FROM posts;
@@ -239,7 +231,7 @@ async function getAllPosts() {
   }
 }
 
-//todo formerly:
+// formerly:
 // async function getAllPosts() {
 //   try {
 //     const { rows } = await client.query(`
@@ -253,7 +245,6 @@ async function getAllPosts() {
 //   }
 // }
 
-//todo refactored, review:
 async function getPostsByUser(userId) {
   try {
     const { rows: postIds } = await client.query(
@@ -274,7 +265,7 @@ async function getPostsByUser(userId) {
     throw error;
   }
 }
-//todo formerly:
+// formerly:
 // async function getPostsByUser(userId) {
 //   try {
 //     const { rows } = await client.query(`
@@ -294,11 +285,6 @@ async function createTags(tagList) {
     return;
   }
 
-  //todo why this syntax:
-  //todo " need something like: $1), ($2), ($3 "
-  //todo needed bc of the way we insert multiple rows in one table,
-  //todo
-
   const insertValues = tagList.map((_, index) => `$${index + 1}`).join("), (");
   // then we can use: (${ insertValues }) in our string template
   // [tag1, tag2, tag3]
@@ -310,15 +296,8 @@ async function createTags(tagList) {
   // then we can use (${ selectValues }) in our string template
 
   try {
-    // insert the tags, doing nothing on conflict
-    // returning nothing, we'll query after
-    // select all tags where the name is in our taglist
-    // return the rows from the query
-    //
-    //todo insertValues could look like this: $1), ($2), ($3
-    //todo so in our INSERT statement we hard coded parentheses
-
-    //todo confirm 2nd arg is ok
+    // insertValues could look like this: $1), ($2), ($3
+    // so in our INSERT statement we hard coded parentheses
     client.query(
       `
     INSERT INTO tags(name)
@@ -327,7 +306,6 @@ async function createTags(tagList) {
     `,
       tagList
     );
-    //todo selecting all from name columns, where name column values are in selectValues
     const { rows } = await client.query(
       `
     SELECT * FROM tags
@@ -336,10 +314,7 @@ async function createTags(tagList) {
     `,
       tagList
     );
-    //todo "WHERE name IN" => we're passing a collection of values, we want to select each row,
-    //todo that matches the values of that collection
-    //todo cycles through tags, compare each tag w select values
-    console.log(rows);
+    console.log("rows returned from createTags, later stored as tagList", rows);
     return rows;
   } catch (error) {
     throw error;
@@ -359,12 +334,20 @@ async function getPostById(postId) {
       `,
       [postId]
     );
-
+    // .* syntax: typically used when selecting from multiple tables
+    //td goal of this?
+    //td difference: SELECT tags.* and SELECT tags
+    //
+    //td why join tables? shouldnt post_tags be sufficient enough?
+    //
+    //td where condition makes it so.. only row value(s) of postId column of post_tags
+    //td that = postId arg is returned
+    //td so that const tags now represents..
     const { rows: tags } = await client.query(
-      `
+      sql`
         SELECT tags.*
         FROM tags
-        JOIN post_tags ON tags.id=post_tags."tagId"
+        JOIN post_tags ON tags.id = post_tags."tagId"
         WHERE post_tags."postId"=$1;
       `,
       [postId]
@@ -392,7 +375,6 @@ async function getPostById(postId) {
   }
 }
 
-//todo practice
 async function addTagsToPost(postId, tagList) {
   try {
     const createPostTagPromises = tagList.map((tag) =>
@@ -407,7 +389,6 @@ async function addTagsToPost(postId, tagList) {
   }
 }
 
-//todo
 async function createPostTag(postId, tagId) {
   try {
     await client.query(
@@ -423,7 +404,6 @@ async function createPostTag(postId, tagId) {
   }
 }
 
-//todo
 async function getPostsByTagName(tagName) {
   try {
     const { rows: postIds } = await client.query(
