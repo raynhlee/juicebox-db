@@ -284,13 +284,12 @@ async function createTags(tagList) {
   if (tagList.length === 0) {
     return;
   }
-
   const insertValues = tagList.map((_, index) => `$${index + 1}`).join("), (");
   // then we can use: (${ insertValues }) in our string template
   // [tag1, tag2, tag3]
   // =>
   // $1), ($2), ($3
-
+  //td
   // need something like $1, $2, $3
   const selectValues = tagList.map((_, index) => `$${index + 1}`).join(", ");
   // then we can use (${ selectValues }) in our string template
@@ -334,17 +333,8 @@ async function getPostById(postId) {
       `,
       [postId]
     );
-    // .* syntax: typically used when selecting from multiple tables
-    //td goal of this?
-    //td difference: SELECT tags.* and SELECT tags
-    //
-    //td why join tables? shouldnt post_tags be sufficient enough?
-    //
-    //td where condition makes it so.. only row value(s) of postId column of post_tags
-    //td that = postId arg is returned
-    //td so that const tags now represents..
     const { rows: tags } = await client.query(
-      sql`
+      `
         SELECT tags.*
         FROM tags
         JOIN post_tags ON tags.id = post_tags."tagId"
@@ -423,6 +413,13 @@ async function getPostsByTagName(tagName) {
   }
 }
 
+async function getAllTags() {
+  const { rows } = await client.query(`
+  SELECT * FROM tags
+  `);
+  return rows;
+}
+
 module.exports = {
   client,
   createUser,
@@ -438,4 +435,5 @@ module.exports = {
   addTagsToPost,
   createPostTag,
   getPostsByTagName,
+  getAllTags,
 };
