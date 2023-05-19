@@ -13,18 +13,16 @@ tagsRouter.use((req, res, next) => {
 //todo ^ what does this mean ?
 tagsRouter.get("/:tagName/posts", async (req, res, next) => {
   // read the tagname from the params
-  //todo correct ?
+
   const tagName = req.params.tagName;
   try {
     // use our method to get posts by tag name from the db
-    //todo correct ?
     const posts = await getPostsByTagName(tagName);
     // send out an object to the client { posts: // the posts }
-    //todo correct ?
     res.send({ posts });
   } catch ({ name, message }) {
     // forward the name and message to the error handler
-    //todo ^idk how to do this
+    next({ name, message });
   }
 });
 
