@@ -19,11 +19,6 @@ server.use((req, res, next) => {
 const apiRouter = require("./api");
 server.use("/api", apiRouter);
 
-//
-//td review:
-// const client = new Client("postgres://localhost:5432/juicebox-dev");
-// from db/index.js
-// what's this doing again?
 const { client } = require("./db");
 client.connect();
 
